@@ -52,7 +52,7 @@ func TestReadPageviews(t *testing.T) {
 			"als.wikipedia Ägypte 4623 mobile-web 2 N1P1\n" +
 				"als.wikipedia Ägypte 8911 desktop 3 A2X1\n" +
 				"ang.wikipedia Lech_Wałęsa 10374 desktop 1 Q1",
-			"gsw.wikipedia/ägypte 5|ang.wikipedia/lech_wałęsa 1",
+			"gsw.wikipedia/4623 2|gsw.wikipedia/8911 3|ang.wikipedia/10374 1",
 		},
 		{
 			"en-wg.wikipedia/Talk:Main_Page  67072 desktop 4 B4",
@@ -60,7 +60,7 @@ func TestReadPageviews(t *testing.T) {
 		},
 		{
 			"zh-min-nan.wikipedia Ìn-tō͘-chi-ná 670272 desktop 1 J1",
-			"nan.wikipedia/ìn-tō͘-chi-ná 1",
+			"nan.wikipedia/670272 1",
 		},
 	}
 	for _, c := range tests {

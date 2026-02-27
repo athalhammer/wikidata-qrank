@@ -11,41 +11,42 @@ import (
 
 func TestFindEntitiesDump(t *testing.T) {
 	dumpsDir := t.TempDir()
-	dir := filepath.Join(dumpsDir, "wikidatawiki", "entities")
-	if err := os.MkdirAll(filepath.Join(dir, "20250215"), 0755); err != nil {
+	sitelinksDir := filepath.Join(dumpsDir, "sitelinks")
+	if err := os.MkdirAll(sitelinksDir, 0755); err != nil {
 		t.Error(err)
 		return
 	}
 
-	dumpPath := filepath.Join(dir, "20250215", "wikidata-20250215-all.json.bz2")
-	if f, err := os.Create(dumpPath); err == nil {
+	// Create a sitelinks file with format: <site>-YYYYMMDD.site.links
+	sitelinksFile := filepath.Join(sitelinksDir, "enwiki-20250215.site.links")
+	if f, err := os.Create(sitelinksFile); err == nil {
 		f.Close()
 	} else {
 		t.Error(err)
 		return
 	}
 
-	err := os.Symlink(filepath.Join("20250215", "wikidata-20250215-all.json.bz2"),
-		filepath.Join(dir, "latest-all.json.bz2"))
-	if err != nil {
+	// Create an older file to ensure we pick the latest one
+	oldFile := filepath.Join(sitelinksDir, "enwiki-20250201.site.links")
+	if f, err := os.Create(oldFile); err == nil {
+		f.Close()
+	} else {
 		t.Error(err)
 		return
 	}
 
-	expectedPath := filepath.Join(dir, "20250215", "wikidata-20250215-all.json.bz2")
+	expectedDate := "2025-02-15"
 	date, path, err := findEntitiesDump(dumpsDir)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if d := date.Format("2006-01-02"); d != "2025-02-15" {
-		t.Errorf("expected 2025-02-15, got %s", d)
+	if d := date.Format("2006-01-02"); d != expectedDate {
+		t.Errorf("expected %s, got %s", expectedDate, d)
 	}
 
-	got, _ := os.Stat(path)
-	expected, _ := os.Stat(expectedPath)
-	if !os.SameFile(expected, got) {
-		t.Errorf("expected %q, got %q", expectedPath, path)
+	if path != sitelinksDir {
+		t.Errorf("expected %q, got %q", sitelinksDir, path)
 	}
 }
