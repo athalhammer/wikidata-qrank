@@ -19,13 +19,6 @@ func main() {
 	var testRun = flag.Bool("testRun", false, "if true, we process only a small fraction of the data; used for testing")
 	flag.Parse()
 
-	// https://wikitech.wikimedia.org/wiki/Help:Toolforge/Build_Service#Using_NFS_shared_storage
-	if toolDir := os.Getenv("TOOL_DATA_DIR"); toolDir != "" {
-		if err := os.Chdir(toolDir); err != nil {
-			log.Fatal(err)
-		}
-	}
-
 	workdir, _ := os.Getwd()
 	logPath := filepath.Join("logs", "qrank-builder.log")
 	fmt.Printf("logs written to %s in workdir=%s", logPath, workdir)
