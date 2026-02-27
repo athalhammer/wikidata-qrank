@@ -9,7 +9,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/url"
+	// "net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -66,7 +66,7 @@ func processPageviews(testRun bool, dumpsPath string, date time.Time, outDir str
 	logger.Printf("latest pageviews dump: %s", latest.Format(time.DateOnly))
 
 	paths := make([]string, 0, 12)
-	for i := 1; i <= 12; i++ {
+	for i := 0; i <= 11; i++ {
 		m := date.AddDate(0, -i, 0)
 		path, err := buildMonthlyPageviews(testRun, dumpsPath, m.Year(), m.Month(), outDir, ctx)
 		if err != nil {
@@ -111,6 +111,8 @@ func buildMonthlyPageviews(testRun bool, dumpsPath string, year int, month time.
 		return "", err
 	}
 	defer writer.Close()
+	// writer := tmpFile
+	// defer writer.Close()
 
 	ch := make(chan string, 10000)
 	config := extsort.DefaultConfig()
@@ -256,12 +258,12 @@ func readPageviewsFile(testRun bool, path string, ch chan<- string, ctx context.
 
 func readPageviews(testRun bool, reader io.Reader, ch chan<- string, ctx context.Context) error {
 	scanner := bufio.NewScanner(reader)
-	var lastSite, lastTitle string
+	var lastSite, lastPageId string
 	var lastCount int64
 	n := 0
 	for scanner.Scan() {
 		n++
-		if testRun && n >= 500 {
+		if testRun && n >= 50000 {
 			break
 		}
 
@@ -280,12 +282,15 @@ func readPageviews(testRun bool, reader io.Reader, ch chan<- string, ctx context
 		// Some, but not all, queryies are urlescaped.
 		// Try to unescape, but fall back to raw query
 		// if the syntax is invalid.
-		title, err := url.QueryUnescape(cols[1])
-		if err != nil {
-			title = cols[1]
+
+		pageId := cols[2]
+
+		// if pageId is null skip
+		if pageId == "null" {
+			continue
 		}
 
-		if !utf8.ValidString(title) {
+		if !utf8.ValidString(pageId) {
 			continue
 		}
 
@@ -294,33 +299,33 @@ func readPageviews(testRun bool, reader io.Reader, ch chan<- string, ctx context
 			continue
 		}
 
-		if site == lastSite && title == lastTitle {
+		if site == lastSite && pageId == lastPageId {
 			lastCount += c
 		} else {
-			if err := emitPageviews(lastSite, lastTitle, lastCount, ch, ctx); err != nil {
+			if err := emitPageviews(lastSite, lastPageId, lastCount, ch, ctx); err != nil {
 				return err
 			}
 			lastSite = site
-			lastTitle = title
+			lastPageId = pageId
 			lastCount = c
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		return err
 	}
-	if err := emitPageviews(lastSite, lastTitle, lastCount, ch, ctx); err != nil {
+	if err := emitPageviews(lastSite, lastPageId, lastCount, ch, ctx); err != nil {
 		return err
 	}
 	return nil
 }
 
-func emitPageviews(site, title string, count int64, ch chan<- string, ctx context.Context) error {
+func emitPageviews(site, pageId string, count int64, ch chan<- string, ctx context.Context) error {
 	if count > 0 {
 		dot := strings.IndexByte(site, '.')
 		if dot < 0 {
 			return nil
 		}
-		line := formatLine(site[0:dot], site[dot+1:len(site)], title, strconv.FormatInt(count, 10))
+		line := formatLine(site[0:dot], site[dot+1:len(site)], pageId, strconv.FormatInt(count, 10))
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

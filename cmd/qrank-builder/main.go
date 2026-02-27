@@ -9,7 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
+	//"net/http"
 	"os"
 	"path/filepath"
 	"time"
@@ -21,11 +21,11 @@ import (
 var logger *log.Logger
 
 func main() {
-	ctx := context.Background()
+	//ctx := context.Background()
 
 	var dumps = flag.String("dumps", "/public/dumps/public", "path to Wikimedia dumps")
 	var testRun = flag.Bool("testRun", false, "if true, we process only a small fraction of the data; used for testing")
-	storagekey := flag.String("", "", "path to key with storage access credentials")
+	//storagekey := flag.String("", "", "path to key with storage access credentials")
 	flag.Parse()
 
 	// https://wikitech.wikimedia.org/wiki/Help:Toolforge/Build_Service#Using_NFS_shared_storage
@@ -47,7 +47,7 @@ func main() {
 	logger = log.New(logfile, "", log.Ldate|log.Ltime|log.LUTC|log.Lshortfile)
 	logger.Printf("qrank-builder starting up")
 
-	storage, err := NewStorageClient(*storagekey)
+	/*storage, err := NewStorageClient(*storagekey)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -58,9 +58,9 @@ func main() {
 	}
 	if !bucketExists {
 		logger.Fatal("storage bucket \"qrank\" does not exist")
-	}
+	}*/
 
-	if err := computeQRank(*dumps, *testRun, storage); err != nil {
+	if err := computeQRank(*dumps, *testRun); err != nil {
 		logger.Printf("ComputeQRank failed: %v", err)
 		log.Fatal(err)
 		return
@@ -99,8 +99,8 @@ func NewStorageClient(keypath string) (*minio.Client, error) {
 	return client, nil
 }
 
-func computeQRank(dumpsPath string, testRun bool, storage *minio.Client) error {
-	return Build(&http.Client{}, dumpsPath /*numWeeks*/, 52, storage)
+func computeQRank(dumpsPath string, testRun bool) error {
+	//return Build(&http.Client{}, dumpsPath /*numWeeks*/, 52, storage)
 
 	// TODO: Old code starts here, remove after new implementation is done.
 
@@ -118,17 +118,21 @@ func computeQRank(dumpsPath string, testRun bool, storage *minio.Client) error {
 		return err
 	}
 
-	edate, epath, err := findEntitiesDump(dumpsPath)
+	edate, _, err := findEntitiesDump(dumpsPath)
 	if err != nil {
 		return err
 	}
 
-	pageviews, err := processPageviews(testRun, dumpsPath, edate, outDir, ctx)
+	// Use the month before the sitelinks date for pageviews, since pageviews
+	// data typically lags behind sitelinks data
+	pvDate := edate.AddDate(0, -1, 0)
+	pageviews, err := processPageviews(testRun, dumpsPath, pvDate, outDir, ctx)
 	if err != nil {
 		return err
 	}
 
-	sitelinks, err := processEntities(testRun, epath, edate, outDir, ctx)
+	sitelinksDir := filepath.Join(dumpsPath, "sitelinks")
+	sitelinks, err := processEntities(testRun, sitelinksDir, edate, outDir, ctx)
 	if err != nil {
 		return err
 	}
@@ -138,21 +142,22 @@ func computeQRank(dumpsPath string, testRun bool, storage *minio.Client) error {
 		return err
 	}
 
-	qrank, err := buildQRank(edate, qviews, outDir, ctx)
-	if err != nil {
-		return err
-	}
+	buildQRank(edate, qviews, outDir, ctx)
+	// if err != nil {
+	// 	return err
+	// }
 
-	stats, err := buildStats(edate, qrank, 50, 1000, outDir)
-	if err != nil {
-		return err
-	}
+	// buildStats(edate, qrank, 50, 1000, outDir)
+	// /*if err != nil {
+	// 	return err
+	// }
 
-	if storage != nil {
+
+	/*if storage != nil {
 		if err := upload(edate, qrank, stats, storage); err != nil {
 			return err
 		}
-	}
+	}*/
 
 	return nil
 }
