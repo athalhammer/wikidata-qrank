@@ -58,6 +58,7 @@ func buildQRank(date time.Time, qviews string, outDir string, ctx context.Contex
 		fmt.Sprintf("qrank-%04d%02d%02d.gz", date.Year(), date.Month(), date.Day()))
 	_, err := os.Stat(qrankPath)
 	if err == nil {
+		logger.Printf("using cached qrank: %s", qrankPath)
 		return qrankPath, nil // use pre-existing file
 	}
 	if !os.IsNotExist(err) {

@@ -82,6 +82,7 @@ func buildMonthlyPageviews(testRun bool, dumpsPath string, year int, month time.
 		fmt.Sprintf("pageviews-%04d%02d.br", year, month))
 	_, err := os.Stat(outPath)
 	if err == nil {
+		logger.Printf("using cached pageviews: %s", outPath)
 		return outPath, nil // use pre-existing file
 	}
 	if !os.IsNotExist(err) {

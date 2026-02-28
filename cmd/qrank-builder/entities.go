@@ -58,6 +58,7 @@ func processEntities(testRun bool, sitelinksDir string, date time.Time, outDir s
 		fmt.Sprintf("sitelinks-%04d%02d%02d.br", year, month, day))
 	_, err := os.Stat(sitelinksPath)
 	if err == nil {
+		logger.Printf("using cached sitelinks: %s", sitelinksPath)
 		return sitelinksPath, nil // use pre-existing file
 	}
 	if !os.IsNotExist(err) {
