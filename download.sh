@@ -45,8 +45,8 @@ while month_le $YEAR $MONTH $END_YEAR $END_MONTH; do
       continue
     fi
     echo "Downloading $URL"
-    wget -q -O "$FILE" "$URL" || echo "Warning: failed to download $URL"
-    test -s "$FILE" || { echo "deleting empty $FILE"; rm -f "$FILE"; }
+    wget -q -O "$FILE" "$URL" || printf "Warning: failed to download $URL... "
+    test -s "$FILE" || { echo "deleting empty file"; rm -f "$FILE"; }
   done
 
   # Increment month
