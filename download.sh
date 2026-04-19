@@ -45,7 +45,7 @@ while month_le $YEAR $MONTH $END_YEAR $END_MONTH; do
       continue
     fi
     echo "Downloading $URL"
-    wget -c -O "$FILE" "$URL" || echo "Warning: failed to download $URL"
+    wget -q -O "$FILE" "$URL" || echo "Warning: failed to download $URL"
     test -s "$FILE" || { echo "deleting empty $FILE"; rm -f "$FILE"; }
   done
 
