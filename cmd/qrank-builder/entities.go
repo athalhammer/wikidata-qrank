@@ -65,7 +65,7 @@ func processEntities(testRun bool, sitelinksDir string, date time.Time, outDir s
 		return "", err
 	}
 
-	logger.Printf("processing sitelinks files for %04d-%02d-%d", year, month, day)
+	logger.Printf("processing sitelinks files for %04d-%02d-%02d", year, month, day)
 	start := time.Now()
 
 	tmpSitelinksPath := sitelinksPath + ".tmp"
