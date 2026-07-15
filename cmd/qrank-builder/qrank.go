@@ -55,9 +55,10 @@ func QRankLess(a, b extsort.SortType) bool {
 func buildQRank(date time.Time, qviews string, outDir string, ctx context.Context) (string, error) {
 	qrankPath := filepath.Join(
 		outDir,
-		fmt.Sprintf("qrank-%04d%02d%02d.gz", date.Year(), date.Month(), date.Day()))
+		fmt.Sprintf("qrank-athaMod-%04d%02d%02d.gz", date.Year(), date.Month(), date.Day()))
 	_, err := os.Stat(qrankPath)
 	if err == nil {
+		logger.Printf("using cached qrank: %s", qrankPath)
 		return qrankPath, nil // use pre-existing file
 	}
 	if !os.IsNotExist(err) {

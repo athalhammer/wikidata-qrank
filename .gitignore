@@ -7,6 +7,7 @@
 /qrank-webserver
 /webserver
 cache/
+dumps/
 cache-testrun/
 keys/
 logs/

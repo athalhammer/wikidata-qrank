@@ -51,6 +51,7 @@ func buildQViews(testRun bool, date time.Time, sitelinks string, pageviews []str
 		fmt.Sprintf("qviews-%04d%02d%02d.br", date.Year(), date.Month(), date.Day()))
 	_, err := os.Stat(qviewsPath)
 	if err == nil {
+		logger.Printf("using cached qviews: %s", qviewsPath)
 		return qviewsPath, nil // use pre-existing file
 	}
 	if !os.IsNotExist(err) {
