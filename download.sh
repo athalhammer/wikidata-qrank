@@ -16,6 +16,7 @@ START_MONTH=$(date -d "$CUR_YEAR-$CUR_MONTH-01 -1 year" +%m)
 # Calculate the last month to download (previous month)
 END_YEAR=$(date -d "$CUR_YEAR-$CUR_MONTH-01 -1 month" +%Y)
 END_MONTH=$(date -d "$CUR_YEAR-$CUR_MONTH-01 -1 month" +%m)
+END_MONTH=$((10#$END_MONTH))
 
 # Function to compare year/month (returns 0 if $1/$2 <= $3/$4)
 month_le() {
